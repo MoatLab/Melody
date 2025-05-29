@@ -1,3 +1,3 @@
 # Melody
 
-*Work in progress... (will be released around May 2025)*
+*Work in progress... (will be released by mid-June 2025)*
