@@ -1,0 +1,16 @@
+amazon_Office_Products_1.25X 0 
+amazon_Office_Products_1.5X 0 
+amazon_Office_Products_2.0X 0 
+amazon_Office_Products_9.0X 0 
+amazon_Electronics_1.25X 0 
+amazon_Electronics_1.5X 0
+amazon_Electronics_2.0X 0
+amazon_Electronics_9.0X 0
+amazon_Sports_and_Outdoors_1.25X 0
+amazon_Sports_and_Outdoors_1.5X 0
+amazon_Sports_and_Outdoors_2.0X 0
+amazon_Sports_and_Outdoors_9.0X 0
+amazon_Home_and_Kitchen_1.25X 0
+amazon_Home_and_Kitchen_1.5X 0
+amazon_Home_and_Kitchen_2.0X 0
+amazon_Home_and_Kitchen_9.0X 0

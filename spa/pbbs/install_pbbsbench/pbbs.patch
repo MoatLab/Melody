@@ -1,0 +1,76 @@
+diff --git a/common/runTests.py b/common/runTests.py
+index 293e41b..eff2233 100644
+--- a/common/runTests.py
++++ b/common/runTests.py
+@@ -44,6 +44,18 @@ def geomean(a) :
+     r = r * x
+   return r**(1.0/len(a))
+ 
++def gen_data(test, dataDir):
++    [weight, inputFileNames, runOptions, checkOptions] = test
++    if type(inputFileNames) is str :
++        inputFileNames = [inputFileNames]
++    shortInputNames = " ".join(inputFileNames)
++    if len(dataDir)>0:
++        out = shellGetOutput("cd " + dataDir + "; make " + shortInputNames)
++
++def genAllData(tests, dataDir):
++    for test in tests:
++        gen_data(test, dataDir)
++
+ def runTest(runProgram, checkProgram, dataDir, test, rounds, procs, noOutput, keepData) :
+     random.seed()
+     outFile="/tmp/ofile%d_%d" %(random.randint(0, 1000000), random.randint(0, 1000000)) 
+@@ -51,13 +63,16 @@ def runTest(runProgram, checkProgram, dataDir, test, rounds, procs, noOutput, ke
+     if type(inputFileNames) is str :
+       inputFileNames = [inputFileNames]
+     shortInputNames = " ".join(inputFileNames)
+-    if len(dataDir)>0:
+-      out = shellGetOutput("cd " + dataDir + "; make " + shortInputNames)
++    print(dataDir, shortInputNames)
++    #if len(dataDir)>0:
++      #out = shellGetOutput("cd " + dataDir + "; make " + shortInputNames)
+     longInputNames = " ".join(dataDir + "/" + name for name in inputFileNames)
+     runOptions = runOptions + " -r " + repr(rounds)
+     if (noOutput == 0) :
+       runOptions = runOptions + " -o " + outFile
++    print(longInputNames)
+     times = runSingle(runProgram, runOptions, longInputNames, procs)
++
+     if (noOutput == 0) :
+       checkString = ("./" + checkProgram + " " + checkOptions + " "
+                      + longInputNames + " " + outFile)
+@@ -83,10 +98,13 @@ def averageTime(times) :
+     return sum(times)/len(times)
+     
+ def timeAll(name, runProgram, checkProgram, dataDir, tests, rounds, procs, noOutput,
+-            addToDatabase, problem, keepData) :
++            addToDatabase, problem, keepData, noGenData) :
+   totalTime = 0
+   totalWeight = 0
+   try:
++    if (noGenData == 0):
++        for test in tests:
++            gen_data(test, dataDir)
+     results = [runTest(runProgram, checkProgram, dataDir, test, rounds, procs,
+                        noOutput, keepData)
+                for test in tests]
+@@ -132,14 +150,15 @@ def getArgs() :
+   processors = int(getArg("-p", 0))
+   rounds = int(getArg("-r", 1))
+   keep = getOption("-k")
+-  return (noOutput, rounds, addToDatabase, processors, keep)
++  noGenData = getOption("-g")
++  return (noOutput, rounds, addToDatabase, processors, keep, noGenData)
+ 
+ def timeAllArgs(runProgram, problem, checkProgram, dataDir, tests, keepInputData=False) :
+   keepData = keepInputData
+-  (noOutput, rounds, addToDatabase, procs, keep) = getArgs()
++  (noOutput, rounds, addToDatabase, procs, keep, noGenData) = getArgs()
+   keep = keepInputData or keep
+   name = os.path.basename(os.getcwd())
+-  timeAll(name, runProgram, checkProgram, dataDir, tests, rounds, procs, noOutput, addToDatabase, problem, keep)
++  timeAll(name, runProgram, checkProgram, dataDir, tests, rounds, procs, noOutput, addToDatabase, problem, keep, noGenData)
+ 
+ #
+ # Database insertions

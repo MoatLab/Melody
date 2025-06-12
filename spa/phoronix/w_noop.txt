@@ -1,0 +1,7 @@
+build2
+compress-7zip
+deepspeech
+dolfyn
+encode-wavpack
+hmmer
+phpbench

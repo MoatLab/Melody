@@ -1,0 +1,4 @@
+gpt_2_124M_unconditional 124M
+gpt_2_355M_unconditional 355M
+gpt_2_774M_unconditional 774M
+gpt_2_1558M_unconditional 1558M
