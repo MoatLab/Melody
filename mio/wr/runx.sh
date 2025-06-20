@@ -14,6 +14,6 @@ do
   perfout=$RST_DIR/N0m${mem_node}_$th.data
   
   SECONDS=0
-  numactl -N0 -- ../src/bench -t $th -r ${mem_node} -i $it -I 8 -T 2 -m $bs > $RST_DIR/N0m${mem_node}_$th.txt
+  ../src/bench -t $th -r ${mem_node} -i $it -I 8 -T 2 -m $bs > $RST_DIR/N0m${mem_node}_$th.txt
   echo $SECONDS
 done

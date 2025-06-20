@@ -20,10 +20,9 @@ void set_default(header_t* header) {
   header->buf_a_numa_node = 0;
   header->op_iter = 5;
   header->per_thread_size = header->total_buf_size;
-  header->starting_core = -1;
+  header->starting_core = 0;
   header->random = false;
   header->halt = 0;
-  header->num_clear_pipe = 0;
   header->tsc_freq = TSC_FREQ_GHZ;
   header->type = POINTER_CHASING;
   header->num_chase_block = header->per_thread_size / sizeof(chase_t);
@@ -38,7 +37,7 @@ int parse_arg(int argc, char*argv[], header_t* header) {
   // int write;
   set_default(header);
 
-  while ((opt = getopt(argc, argv, "t:m:i:r:I:T:P:")) != -1) {
+  while ((opt = getopt(argc, argv, "t:m:i:r:I:T:P:c:R")) != -1) {
     switch (opt) {
       case 't':
         header->num_thread = atoi(optarg);
@@ -65,6 +64,12 @@ int parse_arg(int argc, char*argv[], header_t* header) {
         break;
       case 'P':
         header->print = atoi(optarg);
+        break;
+      case 'c':
+        header->starting_core = atoi(optarg);
+        break;
+      case 'R':
+        header->random = true;
         break;
     }
   }

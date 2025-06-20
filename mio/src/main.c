@@ -155,7 +155,9 @@ uint64_t init_ptr_buf(header_t* header) {
   curr_ptr->ptr_arr[0] = (chase_t*)header->start_addr_a;
   curr_ptr->ptr_arr[0]->ptr_arr[1] = curr_ptr;
 
-  // shuffle(header);
+  if (header->random) {
+    shuffle(header);
+  }
   verify(header);
   return 0;
 }
@@ -212,7 +214,7 @@ void pointer_chasing(header_t* header) {
   uint64_t start[2], end[2];
   int *records_buf = (int *) header->records_buf;
   if (header->start_addr_a == NULL) {
-    printf("ERROR header->start_addr_a == NULL\n");
+    fprintf(stderr, "ERROR header->start_addr_a == NULL\n");
     return;
   }
   init_ptr_buf(header);
@@ -265,8 +267,10 @@ void bandwidth(header_t* header) {
 
 int stick_this_thread_to_core(int core_id) {
   int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-  if (core_id < 0 || core_id >= num_cores)
+  if (core_id < 0 || core_id >= num_cores) {
+    fprintf(stderr, "ERROR core_id < 0 || core_id >= num_cores\n");
     return EINVAL;
+  }
   cpu_set_t cpuset;
   CPU_ZERO(&cpuset);
   CPU_SET(core_id, &cpuset);
@@ -277,9 +281,9 @@ int stick_this_thread_to_core(int core_id) {
 void* thread_wrapper(void* arg) {
   header_t* header = (header_t*)arg;
   int ret = 0;
-  ret = stick_this_thread_to_core(header->thread_idx);
+  ret = stick_this_thread_to_core(header->thread_idx + header->starting_core);
   if(ret != 0){
-    printf("ERROR stick_this_thread_to_core\n");
+    fprintf(stderr, "ERROR stick_this_thread_to_core\n");
     return NULL;
   }
 
@@ -385,7 +389,7 @@ int main(int argc, char*argv[]) {
   header = malloc(sizeof(header_t));
   ret = parse_arg(argc, argv, header);
   if (ret < 0) {
-    printf("ERROR parse_arg\n");
+    fprintf(stderr, "ERROR parse_arg\n");
     return 0;
   }
   run(header);

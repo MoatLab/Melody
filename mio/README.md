@@ -36,9 +36,7 @@ Each line denotes the latency in nanoseconds.
 
 ## Notes
 * `TSC_FREQ_GHZ` should be set as the machine's CPU frequency.
-* `-I` is set as 8 for 
-* Enabling `shuffle` in `main.c` for random pointer-chasing. 
-Current setting uses non-random pointer-chasing with prefetchers off for measuring latency. The suffling "window" and iterations can also be tuned in the code. 
+* `-I` is set as 8 for measuring the averaging latency for each 8 accesses.
 * Tune of the number of threads in `runx.sh` in each folder for different access types to comply with different physical machines.
 For example, `pc` currently uses `1,2,4,8` threads.
 * The data buffer size is for each threads. 
@@ -46,6 +44,9 @@ The data buffer accessed by each thread is independent.
 The size can be set with `-m` in MB.
 * `-i` sets the number of iterations.
 * `-r` sets which NUMA node is accessed.
+* Use `-R` for enabling random pointer-chasing. 
+The default setting (without `-R`) uses non-random pointer-chasing with prefetchers off for measuring latency. The suffling "window" and iterations can also be tuned in the code. 
+* By default, the program pins the cores for each thread it uses, and the cores it tries to pin is starting from core `0`. For example, with `-t` set as 8, the program uses the cores from `0` to `7`. The starting core (`starting_core`  in the code) can be specified by using `-c`.
 
 ## Acknowledgments
 

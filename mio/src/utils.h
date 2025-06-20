@@ -99,15 +99,12 @@ typedef struct header_struct {
   double tsc_freq;
   int thread_idx;
 
-  int core_a;
   char* start_addr_a;
   uint64_t per_thread_size;
 
   int op_iter;
   int starting_core;
   bool random;
-  bool flush_block;
-  int num_clear_pipe;
 
   uint64_t num_chase_block;
   uint64_t chase_interval;
