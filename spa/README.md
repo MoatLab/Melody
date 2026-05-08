@@ -35,11 +35,11 @@ Welcome to find out more use cases for this method.*
   ```
 * Go to a workload suite directory, (for example, cpu2017), run the 1st workload in the suite:
   ```
-  ./run.sh w.txt 1
+  sudo ./run.sh w.txt 1
   ```
   Run all workloads:
   ```
-  ./run.sh w.txt
+  sudo ./run.sh w.txt
   ```
 
 * Collect the performance counters from the output files. 

@@ -276,3 +276,5 @@ cython_debug/
 
 mio/*.txt
 spa/rst
+spa/**/rst
+spa/linux
