@@ -2,7 +2,18 @@
 RUNDIR=$(echo "$(dirname "$PWD")")
 DLRM_RUN_DIR="${RUNDIR}/dlrm"
 RSTDIR="${DLRM_RUN_DIR}/rst"
-PERF="${RUNDIR}/linux/tools/perf/perf"
+PERF_EVENTS_FILE="${DLRM_RUN_DIR}/perf_events.txt"
+#PERF="${RUNDIR}/linux/tools/perf/perf"
+PERF=$(which perf)
+if [[ -z "$PERF" ]]; then
+  echo "Error: perf not found"
+  exit 1
+fi
+
+if [[ ! -f "$PERF_EVENTS_FILE" ]]; then
+  echo "Error: perf events file not found: $PERF_EVENTS_FILE"
+  exit 1
+fi
 
 if [[ $# != 1 && $# != 2 ]]; then
   echo ""
@@ -40,7 +51,6 @@ run_one_exp()
   local w=$1
   local et=$2
   local id=$3
-  local mem=$4
   local run_cmd="bash cmd.sh"
   flush_fs_caches
 
@@ -63,11 +73,9 @@ run_one_exp()
   local sysinfof=${output_dir}/${et}-${id}.sysinfo
   local perfoutput=${output_dir}/${et}-${id}.data
 
-  local perf_events="instructions,cycles"
-  perf_events="${perf_events}"",CYCLE_ACTIVITY.STALLS_MEM_ANY,EXE_ACTIVITY.BOUND_ON_STORES"
-  perf_events="${perf_events}"",CYCLE_ACTIVITY.STALLS_L1D_MISS,CYCLE_ACTIVITY.STALLS_L2_MISS,CYCLE_ACTIVITY.STALLS_L3_MISS"
-  perf_events="${perf_events}"",EXE_ACTIVITY.1_PORTS_UTIL,EXE_ACTIVITY.2_PORTS_UTIL,PARTIAL_RAT_STALLS.SCOREBOARD"
-  run_cmd="sudo $PERF stat -e ${perf_events} -o $perfoutput  ""${run_cmd}"
+  local perf_events
+  perf_events=$(grep -v '^\s*#' "$PERF_EVENTS_FILE" | grep -v '^\s*$' | paste -sd,)
+  run_cmd="$PERF stat -e ${perf_events} -o $perfoutput  ""${run_cmd}"
 
   echo "START clustering"
   ./cluster.sh
@@ -102,8 +110,8 @@ run_seq()
   for ((i = 0; i < ${#warr[@]}; i++)); do
     w=${warr[$i]}
     m=${marr[$i]}
-    cd "$w"
-    run_one_exp "$w" "$type" "$id" "$m"
+    cd "$w" || { echo "ERROR: cannot cd into '$w', skipping"; continue; }
+    run_one_exp "$w" "$type" "$id"
     cd ../
   done
   return

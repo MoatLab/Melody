@@ -4,7 +4,18 @@ THIS_SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNDIR=$(echo "$(dirname "$PWD")")
 REDIS_RUN_DIR="$RUNDIR/redis"
 RSTDIR="${REDIS_RUN_DIR}/rst"
-PERF="${RUNDIR}/linux/tools/perf/perf"
+PERF_EVENTS_FILE="${REDIS_RUN_DIR}/perf_events.txt"
+#PERF="${RUNDIR}/linux/tools/perf/perf"
+PERF=$(which perf)
+if [[ -z "$PERF" ]]; then
+  echo "Error: perf not found"
+  exit 1
+fi
+
+if [[ ! -f "$PERF_EVENTS_FILE" ]]; then
+  echo "Error: perf events file not found: $PERF_EVENTS_FILE"
+  exit 1
+fi
 YCSB_DIR="/tdata/YCSB"
 
 REDIS_SERVER=10.10.1.1
@@ -60,8 +71,7 @@ run_one_exp() {
   local w=$1
   local et=$2
   local id=$3
-  local mem=$4
-  local propid=$5
+  local propid=$4
   local run_cmd="bash cmd.sh"
 
   echo "run_one_exp 1"
@@ -88,10 +98,8 @@ run_one_exp() {
   local rawlatf=${RUN_F_PREFIX}.rawlat
   local perfoutput=${output_dir}/${et}-${id}.data
 
-  local perf_events="instructions,cycles"
-  perf_events="${perf_events}"",CYCLE_ACTIVITY.STALLS_MEM_ANY,EXE_ACTIVITY.BOUND_ON_STORES"
-  perf_events="${perf_events}"",CYCLE_ACTIVITY.STALLS_L1D_MISS,CYCLE_ACTIVITY.STALLS_L2_MISS,CYCLE_ACTIVITY.STALLS_L3_MISS"
-  perf_events="${perf_events}"",EXE_ACTIVITY.1_PORTS_UTIL,EXE_ACTIVITY.2_PORTS_UTIL,PARTIAL_RAT_STALLS.SCOREBOARD"
+  local perf_events
+  perf_events=$(grep -v '^\s*#' "$PERF_EVENTS_FILE" | grep -v '^\s*$' | paste -sd,)
   perf_cmd="$PERF stat -e ${perf_events} -o $perfoutput  "
 
   flush_fs_caches
@@ -134,7 +142,7 @@ run_seq_cxl_L100() {
     w=${warr[$i]}
     m=${marr[$i]}
     propid=${carr[$i]}
-    run_one_exp "$w" "L100" "100" "$m" "$propid"
+    run_one_exp "$w" "L100" "100" "$propid"
   done
 }
 
@@ -145,7 +153,7 @@ run_seq_cxl_L0() {
     w=${warr[$i]}
     m=${marr[$i]}
     propid=${carr[$i]}
-    run_one_exp "$w" "L0" "$id" "$m" "$propid"
+    run_one_exp "$w" "L0" "$id" "$propid"
   done
 }
 
