@@ -1,6 +1,7 @@
 #!/bin/bash
 
 THIS_SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${THIS_SCRIPT_PATH}/paths.sh" || exit
 RUNDIR=$(echo "$(dirname "$PWD")")
 REDIS_RUN_DIR="$RUNDIR/redis"
 RSTDIR="${REDIS_RUN_DIR}/rst"
@@ -16,11 +17,6 @@ if [[ ! -f "$PERF_EVENTS_FILE" ]]; then
   echo "Error: perf events file not found: $PERF_EVENTS_FILE"
   exit 1
 fi
-YCSB_DIR="/tdata/YCSB"
-
-REDIS_SERVER=10.10.1.1
-REDIS_CLIENT=10.10.1.2
-
 source $RUNDIR/config.sh || exit
 
 echo "==> Result directory: $RSTDIR"

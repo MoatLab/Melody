@@ -3,8 +3,9 @@
 sudo apt update >/dev/null 2>&1
 
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_PATH}/../paths.sh"
 
-cd /mnt/sda4
+cd "${REDIS_BASE_DIR}"
 
 echo "Check redis ..."
 [[ -d redis ]] && rm -rf redis && echo "redis removed"

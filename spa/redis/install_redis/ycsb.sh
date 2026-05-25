@@ -1,9 +1,12 @@
 #!/bin/bash
 
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_PATH}/../paths.sh"
+
 sudo apt install maven -y
 
-cd /tdata
-[[ -d ycsb ]] && rm -rf redis && "ycsb removed"
+cd "${YCSB_BASE_DIR}"
+[[ -d YCSB ]] && rm -rf YCSB && echo "ycsb removed"
 
 git clone http://github.com/brianfrankcooper/YCSB.git
 
