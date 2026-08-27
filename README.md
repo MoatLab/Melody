@@ -18,6 +18,7 @@ and CPU prefetcher inefficiencies caused by CXL's high latency.
 It contains:
 + [MIO](mio): latency microbenchmark
 + [SPA](spa): Stall-based Performance Analysis
++ [data](data): performance slowdown data
 
 For more detail, please read the paper: 
 [Systematic CXL Memory Characterization and Performance Analysis at Scale](https://dl.acm.org/doi/pdf/10.1145/3676641.3715987) [ASPLOS'25]
