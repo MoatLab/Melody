@@ -42,6 +42,10 @@ Welcome to find out more use cases for this method.*
   sudo ./run.sh w.txt
   ```
 
+  Set `PERF_INTERVAL_MODE=0` in `config.sh` to save one aggregate count per run in `rst/aggregate`.
+  To sample the counters over time, set `PERF_INTERVAL_MODE=1` and configure the sampling period with
+  `PERF_INTERVAL_MS` (milliseconds). The time-series results are saved in `rst/interval`.
+
 * Collect the performance counters from the output files. 
 `proc` provides a basic processing code for visualizing 
 the slowdown breakdown.
@@ -50,15 +54,29 @@ the slowdown breakdown.
   + Generate data files in `csv`   
   ```
   python3 update_data.py
-  ``` 
+  ```
+  Process only one mode when needed:
+  ```
+  python3 update_data.py aggregate
+  python3 update_data.py interval
+  ```
   + Process the data in `csv` and generate plots in `plots`
   ```
   python3 process.py
-  ``` 
+  ```
+  Process only one mode when needed:
+  ```
+  python3 process.py aggregate
+  python3 process.py interval
+  ```
+  The aggregate plot is generated in `plots/aggregate`. Interval plots are generated for each workload
+  in `plots/interval`; use `--bins` to set the number of instruction intervals (default: `200`):
+  ```
+  python3 process.py interval --bins 100
+  ```
 
 ### Notes
 
 * The `run.sh` files run each workload once on local (NUMA node `0`) and once on remote (NUMA node `1`). 
 The default remote NUMA node is set as `1`. 
 For the remote memory other than NUMA node `1` in multi-nodes servers, set `--membind 1` to other values.
-
