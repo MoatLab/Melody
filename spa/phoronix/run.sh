@@ -3,12 +3,15 @@ RUNDIR=$(echo "$(dirname "$PWD")")
 PHO_RUN_DIR="${RUNDIR}/phoronix"
 RSTDIR="${PHO_RUN_DIR}/rst"
 PERF_EVENTS_FILE="${PHO_RUN_DIR}/perf_events.txt"
-#PERF="${RUNDIR}/linux/tools/perf/perf"
-PERF=$(which perf)
-if [[ -z "$PERF" ]]; then
-  echo "Error: perf not found"
+PERF=$(command -v perf)
+if [[ ! -x "$PERF" ]]; then
+  PERF="${RUNDIR}/linux/tools/perf/perf"
+fi
+if [[ ! -x "$PERF" ]]; then
+  echo "Error: perf not found (tried PATH and ${RUNDIR}/linux/tools/perf/perf)"
   exit 1
 fi
+echo "==> Using perf: $PERF"
 
 if [[ ! -f "$PERF_EVENTS_FILE" ]]; then
   echo "Error: perf events file not found: $PERF_EVENTS_FILE"
@@ -40,9 +43,26 @@ fi
 echo "==> Result directory: $RSTDIR"
 
 source $RUNDIR/config.sh || exit
-echo "Checking perf ..."
-[[ -e $PERF ]] || exit
-echo "Finished checking"
+
+CONFIG_FILE="${PHO_RUN_DIR}/config.sh"
+if [[ -f "$CONFIG_FILE" ]]; then
+  source "$CONFIG_FILE" || exit 1
+else
+  echo "==> $CONFIG_FILE not found, defaulting to aggregate mode"
+fi
+
+PERF_INTERVAL_MODE="${PERF_INTERVAL_MODE:-0}"
+PERF_INTERVAL_MS="${PERF_INTERVAL_MS:-1000}"
+PERF_INTERVAL_SUBDIR="${PERF_INTERVAL_SUBDIR:-interval}"
+PERF_AGGREGATE_SUBDIR="${PERF_AGGREGATE_SUBDIR:-aggregate}"
+
+if [[ "$PERF_INTERVAL_MODE" == "1" ]]; then
+  if [[ ! "$PERF_INTERVAL_MS" =~ ^[0-9]+$ ]] || (( PERF_INTERVAL_MS < 10 )); then
+    echo "Error: PERF_INTERVAL_MS must be an integer >= 10 (got: $PERF_INTERVAL_MS)"
+    exit 1
+  fi
+  echo "==> Interval mode ON, sampling every ${PERF_INTERVAL_MS} ms"
+fi
 
 TIME_FORMAT="\n\n\nReal: %e %E\nUser: %U\nSys: %S\nCmdline: %C\nAvg-total-Mem-kb: %K\nMax-RSS-kb: %M\nSys-pgsize-kb: %Z\nNr-voluntary-context-switches: %w\nCmd-exit-status: %x"
 if [[ ! -e /usr/bin/time ]]; then
@@ -73,7 +93,11 @@ run_one_exp()
     run_cmd="numactl --cpunodebind 0 -- ${run_cmd}"
   fi
 
-  local output_dir="$RSTDIR/$w"
+  local mode_subdir="$PERF_AGGREGATE_SUBDIR"
+  if [[ "$PERF_INTERVAL_MODE" == "1" ]]; then
+    mode_subdir="$PERF_INTERVAL_SUBDIR"
+  fi
+  local output_dir="$RSTDIR/$mode_subdir/$w"
   [[ ! -d ${output_dir} ]] && mkdir -p ${output_dir}
 
   local logf=${output_dir}/${et}-${id}.log
@@ -85,7 +109,11 @@ run_one_exp()
 
   local perf_events
   perf_events=$(grep -v '^\s*#' "$PERF_EVENTS_FILE" | grep -v '^\s*$' | paste -sd,)
-  run_cmd="$PERF stat -e ${perf_events} -o $perfoutput  ""${run_cmd}"
+  local perf_opts=""
+  if [[ "$PERF_INTERVAL_MODE" == "1" ]]; then
+    perf_opts="-I ${PERF_INTERVAL_MS}"
+  fi
+  run_cmd="$PERF stat ${perf_opts} -e ${perf_events} -o $perfoutput  ""${run_cmd}"
   run_cmd="(echo $option; echo $op1) | ""${run_cmd}"
 
   {
